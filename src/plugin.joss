@@ -1,3 +1,0 @@
-// joss_notify entry point
-// Bridges the native Notify and FCM implementations.
-print("[joss_notify] Cargado plugin oficial de Notificaciones FCM.")
