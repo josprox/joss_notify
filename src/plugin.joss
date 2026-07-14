@@ -33,29 +33,26 @@ class Notify {
             return false
         } : {}
 
+        $os = System::env("OS")
+        $bin = "./plugins/joss_notify/1.0.0/bin/joss-push"
+        (Str::contains($os, "Windows")) ? {
+            $bin = "./plugins/joss_notify/1.0.0/bin/joss-push.exe"
+        } : {}
+
         $success = false
 
         foreach ($devices as $dev) {
             $token = $dev["device_token"]
 
-            // Inline python to fetch FCM OAuth2 credentials token and post to google api
-            $pyCode = "import json, requests; from google.oauth2 import service_account; import google.auth.transport.requests; "
-                . "scopes = ['https://www.googleapis.com/auth/firebase.messaging']; "
-                . "creds = service_account.Credentials.from_service_account_file('" . $this->credsPath . "', scopes=scopes); "
-                . "auth_req = google.auth.transport.requests.Request(); creds.refresh(auth_req); "
-                . "with open('" . $this->credsPath . "') as f: sa = json.load(f); proj = sa['project_id']; "
-                . "headers = {'Authorization': 'Bearer ' + creds.token, 'Content-Type': 'application/json'}; "
-                . "payload = {'message': {'token': '" . $token . "', 'notification': {'title': '" . $this->titleText . "', 'body': '" . $this->messageText . "'}}}; "
-                . "r = requests.post('https://fcm.googleapis.com/v1/projects/' + proj + '/messages:send', json=payload, headers=headers); "
-                . "print('ok' if r.status_code == 200 else 'error')"
+            $args = [
+                "--creds", $this->credsPath,
+                "--token", $token,
+                "--title", $this->titleText,
+                "--body", $this->messageText
+            ]
 
-            $args = ["-c", $pyCode]
-            $output = System::Run("python3", $args)
-            (empty($output) || Str::contains($output, "error")) ? {
-                $output = System::Run("python", $args)
-            } : {}
-
-            ($output == "ok\n" || $output == "ok") ? {
+            $output = System::Run($bin, $args)
+            ($output == "ok") ? {
                 $success = true
             } : {}
         }
