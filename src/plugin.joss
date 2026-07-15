@@ -1,0 +1,59 @@
+class Notify {
+    function app($app) {
+        $this->app_ids = [$app]
+        return $this
+    }
+
+    function apps($apps) {
+        $this->app_ids = $apps
+        return $this
+    }
+
+    function segment($segment) {
+        $this->segment_value = $segment
+        return $this
+    }
+
+    function user($user) {
+        $this->user_value = $user
+        return $this
+    }
+
+    function title($title) {
+        $this->title_value = $title
+        return $this
+    }
+
+    function message($message) {
+        $this->message_value = $message
+        return $this
+    }
+
+    function html($html) {
+        $this->html_value = $html
+        return $this
+    }
+
+    function inApp() {
+        $this->type_value = "in_app"
+        return $this
+    }
+
+    function schedule($timestamp) {
+        $this->schedule_value = $timestamp
+        return $this
+    }
+
+    function send() {
+        return Plugin::call("joss_notify", "send", [{
+            "apps": $this->app_ids ?? [],
+            "segment": $this->segment_value ?? "",
+            "user": $this->user_value ?? "",
+            "title": $this->title_value ?? "",
+            "message": $this->message_value ?? "",
+            "html": $this->html_value ?? "",
+            "type": $this->type_value ?? "push",
+            "schedule": $this->schedule_value ?? 0
+        }])
+    }
+}
